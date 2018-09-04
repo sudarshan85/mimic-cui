@@ -1,3 +1,6 @@
 [submodule "QuickUMLS"]
 	path = QuickUMLS
 	url = git@github.com:sudarshan85/QuickUMLS.git
+[submodule "pyConTextNLP"]
+	path = pyConTextNLP
+	url = https://github.com/chapmanbe/pyConTextNLP.git

@@ -15,7 +15,7 @@ def redacorator(func):
     """
     def replace(match):
         ori = match.group()
-        text = match.group().lower()
+        text = match.group().strip().lower()
         if set(ori) == set(' *]['):
             ori = ''
         return func(text, ori)
@@ -124,20 +124,21 @@ def replace_redacted(text):
     # replace person identifier types
     text = pat.sub(replace_identifiers, text)
     
-#     text = re.sub(r'\[\*\*(\d{2})\*\*\] \b[A|P].?M.?\b', 't_hour', text, re.IGNORECASE)    
     return text
 
-
-def replace_time(match):
+@redacorator
+def replace_time(text, ori):
     """
     Replace times with divided up tokens representing the hour.
     E.g., 8:20 AM is replaced by t_forenoon
     """
+    r = ori
+#     if '**' in text:
+#         r = 't_hour'
+#     else:
     try:
-        time = match.group().strip().lower()
-
-        # handle exceptions with custom rules
-        f, s = time.split()
+    # handle exceptions with custom rules
+        f, s = text.split()
         s = 'am' if s[0] == 'a' else 'pm'
         l, r = f.split(':')
         if l == '' or l == '00':
@@ -147,24 +148,31 @@ def replace_time(match):
         if int(l) > 12:
             l = str(int(l) % 12)
         f = ':'.join([l, r])
-        time = ' '.join([f, s])
-        
-        d = datetime.strptime(time, '%I:%M %p')
+        text = ' '.join([f, s])
+
+        d = datetime.strptime(text, '%I:%M %p')
         if d.hour >= 0 and d.hour < 4:
-            time = 't_midnight'
+            r = 't_midnight'
         elif d.hour >= 4 and d.hour < 8:
-            time = 't_dawn'
+            r = 't_dawn'
         elif d.hour >= 8 and d.hour < 12:
-            time = 't_forenoon'
+            r = 't_forenoon'
         elif d.hour >= 12 and d.hour < 16:
-            time = 't_afternoon'
+            r = 't_afternoon'
         elif d.hour >=16 and d.hour <20:
-            time = 't_dusk'
+            r = 't_dusk'
         else:
-            time = 't_night'
+            text = 't_night'
     except ValueError:
-        time = match.group()
-    return time
+        pass
+    return r
+
+@redacorator
+def replace_time2(time, ori):
+    r = ori
+    if '**' in time:
+        r = 't_hour'
+    return r    
 
 def replace_misc(text):
     """
@@ -184,6 +192,8 @@ def replace_misc(text):
     text = re.sub(r'\b[P|p]t.?|\b(IN|OU?T) PT\b', 'patient', text)
     
     text = re.sub(r'\d{0,2}:\d{0,2} \b[A|P]\.?M\.?\b', replace_time, text, flags=re.IGNORECASE)
+    text = re.sub(r'\[\*\*(\d{2})\*\*\] \b[a|p].?m.?\b', replace_time2, text, flags=re.IGNORECASE)    
+
     return text
 
 def process_note(text):

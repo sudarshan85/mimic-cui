@@ -131,40 +131,43 @@ def replace_time(text, ori):
     """
     Replace times with divided up tokens representing the hour.
     E.g., 8:20 AM is replaced by t_forenoon
+    Replace 2-digit redacted information that precedes time identifier with
+    a generic token
+    E.g., [**84**] AM is replaced by t_hour
     """
     r = ori
-#     if '**' in text:
-#         r = 't_hour'
-#     else:
-    try:
-    # handle exceptions with custom rules
-        f, s = text.split()
-        s = 'am' if s[0] == 'a' else 'pm'
-        l, r = f.split(':')
-        if l == '' or l == '00':
-            if r == '':
-                r = str(0).zfill(2)
-            l = str(12)
-        if int(l) > 12:
-            l = str(int(l) % 12)
-        f = ':'.join([l, r])
-        text = ' '.join([f, s])
+    if '**' in text:
+        r = 't_hour'
+    else:
+        try:
+        # handle exceptions with custom rules
+            f, s = text.split()
+            s = 'am' if s[0] == 'a' else 'pm'
+            l, r = f.split(':')
+            if l == '' or l == '00':
+                if r == '':
+                    r = str(0).zfill(2)
+                l = str(12)
+            if int(l) > 12:
+                l = str(int(l) % 12)
+            f = ':'.join([l, r])
+            text = ' '.join([f, s])
 
-        d = datetime.strptime(text, '%I:%M %p')
-        if d.hour >= 0 and d.hour < 4:
-            r = 't_midnight'
-        elif d.hour >= 4 and d.hour < 8:
-            r = 't_dawn'
-        elif d.hour >= 8 and d.hour < 12:
-            r = 't_forenoon'
-        elif d.hour >= 12 and d.hour < 16:
-            r = 't_afternoon'
-        elif d.hour >=16 and d.hour <20:
-            r = 't_dusk'
-        else:
-            text = 't_night'
-    except ValueError:
-        pass
+            d = datetime.strptime(text, '%I:%M %p')
+            if d.hour >= 0 and d.hour < 4:
+                r = 't_midnight'
+            elif d.hour >= 4 and d.hour < 8:
+                r = 't_dawn'
+            elif d.hour >= 8 and d.hour < 12:
+                r = 't_forenoon'
+            elif d.hour >= 12 and d.hour < 16:
+                r = 't_afternoon'
+            elif d.hour >=16 and d.hour <20:
+                r = 't_dusk'
+            else:
+                r = 't_night'
+        except ValueError:
+            pass
     return r
 
 @redacorator
@@ -192,7 +195,7 @@ def replace_misc(text):
     text = re.sub(r'\b[P|p]t.?|\b(IN|OU?T) PT\b', 'patient', text)
     
     text = re.sub(r'\d{0,2}:\d{0,2} \b[A|P]\.?M\.?\b', replace_time, text, flags=re.IGNORECASE)
-    text = re.sub(r'\[\*\*(\d{2})\*\*\] \b[a|p].?m.?\b', replace_time2, text, flags=re.IGNORECASE)    
+    text = re.sub(r'\[\*\*(\d{2})\*\*\] \b[a|p].?m.?\b', replace_time, text, flags=re.IGNORECASE)    
 
     return text
 

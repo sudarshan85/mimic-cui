@@ -30,80 +30,80 @@ def redacorator(func):
 def replace_names(text, ori):
     r = ori
     if 'name' in text:
-        r = 't_name'
+        r = 'xxname'
         if 'last' in text:
             if 'doctor' in text:
-                r = 't_doctor_lastname'
+                r = 'xxdocln'
             else:
-                r = 't_lastname'
+                r = 'xxln'
         elif 'first' in text:
             if 'doctor' in text:
-                r = 't_doctor_firstname'
+                r = 'xxdocfn'
             else:
-                r = 't_firstname'
+                r = 'xxfn'
         elif 'initials' in text:
-            r = 't_initials'
+            r = 'xxinit'
     return r
 
 @redacorator
 def replace_places(text, ori):
     r = ori
     if 'hospital' in text:
-        r = 't_hospital'
+        r = 'xxhosp'
     elif ('company' in text) or ('university/college' in text):
-        r = 't_workplace'
+        r = 'xxwork'
     elif 'location' in text:
-        r = 't_location'
+        r = 'xxloc'
     elif 'country' in text:
-        r = 't_country'
+        r = 'xxcntry'
     elif 'state' in text:
-        r = 't_state'
+        r = 'xxstate'
     elif ('address' in text) or ('po box' in text):
-        r = 't_address'
+        r = 'xxaddr'
     return r
 
 @redacorator
 def replace_dates(text, ori):
     r = ori
     if re.search(r'\d{4}-\d{0,2}-\d{0,2}', text):
-        r = 't_fulldate'
+        r = 'xxdate'
     elif (re.search(r'\d{0,2}-\d{0,2}', text)) or (re.search(r'\d{0,2}\/\d{0,2}', text)) or ('month/day' in text):
-        r = 't_monthday'        
+        r = 'xxmmdd'        
     elif 'year' in text or re.search(r'\b\d{4}\b', text):
-        r = 't_year'
+        r = 'xxyear'
     elif 'month' in text:
-        r = 't_month'
+        r = 'xxmnth'
     elif 'holiday' in text:
-        r = 't_holiday'
+        r = 'xxhols'
     elif 'date range' in text:
-        r = 't_daterange'
+        r = 'xxdternge'
     return r
 
 @redacorator
 def replace_identifiers(text, ori):
     r = ori
     if ('numeric identifier' in text) or ('pager number' in text):
-        r = 't_pager_id'
+        r = 'xxpager'
     elif '(radiology)' in text:
-        r = 't_radclip_id'
+        r = 'xxradclip'
     elif 'social security number' in text:
-        r = 't_ssn'
+        r = 'xxssn'
     elif 'medical record number' in text:
-        r = 't_mrn'
+        r = 'xxmrn'
     elif 'age over 90' in text:
-        r = 't_oldage'
+        r = 'xxage90'
     elif 'serial number' in text:
-        r = 't_sn'
+        r = 'xxsn'
     elif 'unit number' in text:
-        r = 't_unit_no'
+        r = 'xxunit'
     elif 'md number' in text:
-        r = 't_md_no'
+        r = 'xxmd'
     elif 'telephone/fax' in text:
-        r = 't_phone'
+        r = 'xxph'
     elif 'provider number' in text:
-        r = 't_provider_no'
+        r = 'xxprovider'
     elif 'contact info' in text:
-        r = 't_contact_info'
+        r = 'xxcntinfo'
     return r
 
 def replace_redacted(text):
@@ -118,12 +118,11 @@ def replace_redacted(text):
     # replace place types
     text = pat.sub(replace_places, text)
     
-    # replace date types
-    text = pat.sub(replace_dates, text)
-
     # replace person identifier types
-    text = pat.sub(replace_identifiers, text)
+    text = pat.sub(replace_identifiers, text)    
     
+    # replace date types
+    text = pat.sub(replace_dates, text)    
     return text
 
 @redacorator
@@ -137,7 +136,7 @@ def replace_time(text, ori):
     """
     r = ori
     if '**' in text:
-        r = 't_hour'
+        r = 'xxhour'
     else:
         try:
         # handle exceptions with custom rules
@@ -155,27 +154,20 @@ def replace_time(text, ori):
 
             d = datetime.strptime(text, '%I:%M %p')
             if d.hour >= 0 and d.hour < 4:
-                r = 't_midnight'
+                r = 'xxmidngt'
             elif d.hour >= 4 and d.hour < 8:
-                r = 't_dawn'
+                r = 'xxdawn'
             elif d.hour >= 8 and d.hour < 12:
-                r = 't_forenoon'
+                r = 'xxfore'
             elif d.hour >= 12 and d.hour < 16:
-                r = 't_afternoon'
+                r = 'xxafter'
             elif d.hour >=16 and d.hour <20:
-                r = 't_dusk'
+                r = 'xxdusk'
             else:
-                r = 't_night'
+                r = 'xxngt'
         except ValueError:
             pass
     return r
-
-@redacorator
-def replace_time2(time, ori):
-    r = ori
-    if '**' in time:
-        r = 't_hour'
-    return r    
 
 def replace_misc(text):
     """
@@ -184,8 +176,7 @@ def replace_misc(text):
     """    
     # replace different types of "year old" with year_old
     # matches: y.o., y/o, years old. year old, yearold
-    text = re.sub(r'\byears? ?old\b|\by(?:o|r)*[ ./-]*o(?:ld)?\b', 't_year_old',
-               text, flags=re.IGNORECASE)
+    text = re.sub(r'-?\byears? ?-?old\b|\by(?:o|r)*[ ./-]*o(?:ld)?\b', 'xxage', text, flags=re.IGNORECASE)
     
     # replaces yr, yr's, yrs with years
     text = re.sub(r'\byr[\'s]*\b', 'years', text, re.IGNORECASE)

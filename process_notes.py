@@ -16,8 +16,8 @@ def redacorator(func):
     def replace(match):
         ori = match.group()
         text = match.group().strip().lower()
-        if set(ori) == set(' *]['):
-            ori = ''
+#         if set(ori) == set(' *]['):
+#             ori = ''
         return func(text, ori)
     return replace
 
@@ -106,6 +106,17 @@ def replace_identifiers(text, ori):
         r = 'xxcntinfo'
     return r
 
+@redacorator
+def replace_digits(text, ori):
+    r = ori
+    if re.search(r'\d\d\d', text):
+        r = 'xx3digit' 
+    elif re.search(r'\d\d', text):
+        r = 'xx2digit'
+    elif re.search(r'\d', text):
+        r = 'xx1digit'
+    return r
+
 def replace_redacted(text):
     """
     Function that compiles the redacted pattern and calls all the replace functions
@@ -122,7 +133,10 @@ def replace_redacted(text):
     text = pat.sub(replace_identifiers, text)    
     
     # replace date types
-    text = pat.sub(replace_dates, text)    
+    text = pat.sub(replace_dates, text)
+    
+    # replace remaining digits
+    text = pat.sub(replace_digits, text)
     return text
 
 @redacorator
@@ -183,7 +197,7 @@ def replace_misc(text):
     
     # replace Pt and pt with patient, and IN/OUT/OT PT with patient
     # Note: PT also refers to physical therapy and physical therapist
-    text = re.sub(r'\b[P|p]t.?|\b(IN|OU?T) PT\b', 'patient', text)
+    text = re.sub(r'\b[P|p]t.?|\b(IN|OU?T) PT\b', 'patient ', text)
     
     text = re.sub(r'\d{0,2}:\d{0,2} \b[A|P]\.?M\.?\b', replace_time, text, flags=re.IGNORECASE)
     text = re.sub(r'\[\*\*(\d{2})\*\*\] \b[a|p].?m.?\b', replace_time, text, flags=re.IGNORECASE)    

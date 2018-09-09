@@ -76,7 +76,7 @@ def replace_dates(text, ori):
     elif 'holiday' in text:
         r = 'xxhols'
     elif 'date range' in text:
-        r = 'xxdternge'
+        r = 'xxdtrnge'
     return r
 
 @redacorator
@@ -89,21 +89,27 @@ def replace_identifiers(text, ori):
     elif 'social security number' in text:
         r = 'xxssn'
     elif 'medical record number' in text:
-        r = 'xxmrn'
+        r = 'xxmrno'
     elif 'age over 90' in text:
         r = 'xxage90'
     elif 'serial number' in text:
-        r = 'xxsn'
+        r = 'xxsno'
     elif 'unit number' in text:
-        r = 'xxunit'
+        r = 'xxunitno'
     elif 'md number' in text:
-        r = 'xxmd'
+        r = 'xxmdno'
     elif 'telephone/fax' in text:
         r = 'xxph'
     elif 'provider number' in text:
-        r = 'xxprovider'
+        r = 'xxpno'
+    elif 'job number' in text:
+        r = 'xxjobno'
+    elif 'dictator info' in text:
+        r = 'xxdicinfo'        
     elif 'contact info' in text:
         r = 'xxcntinfo'
+    elif 'attending info' in text:
+        r = 'xxattinfo'        
     return r
 
 @redacorator
@@ -190,7 +196,7 @@ def replace_misc(text):
     """    
     # replace different types of "year old" with year_old
     # matches: y.o., y/o, years old. year old, yearold
-    text = re.sub(r'-?\byears? ?-?old\b|\by(?:o|r)*[ ./-]*o(?:ld)?\b', 'xxage', text, flags=re.IGNORECASE)
+    text = re.sub(r'-?\byears? ?-?old\b|\by(?:o|r)*[ ./-]*o(?:ld)?\b', ' years old', text, flags=re.IGNORECASE)
     
     # replaces yr, yr's, yrs with years
     text = re.sub(r'\byr[\'s]*\b', 'years', text, re.IGNORECASE)
@@ -199,8 +205,11 @@ def replace_misc(text):
     # Note: PT also refers to physical therapy and physical therapist
     text = re.sub(r'\b[P|p]t.?|\b(IN|OU?T) PT\b', 'patient ', text)
     
+    # replace time types
     text = re.sub(r'\d{0,2}:\d{0,2} \b[A|P]\.?M\.?\b', replace_time, text, flags=re.IGNORECASE)
-    text = re.sub(r'\[\*\*(\d{2})\*\*\] \b[a|p].?m.?\b', replace_time, text, flags=re.IGNORECASE)    
+    text = re.sub(r'\[\*\*(\d{2})\*\*\] \b[a|p].?m.?\b', replace_time, text, flags=re.IGNORECASE)
+    
+#     text = re.sub(r'\[\*\*(.*?)\*\*\]', '', text, flags=re.IGNORECASE)
 
     return text
 

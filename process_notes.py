@@ -13,13 +13,11 @@ def redacorator(func):
     lower-case version of it to the replace functions. It also checks for
     empty redacted information.
     """
-    def replace(match):
+    def _replace(match):
         ori = match.group()
         text = match.group().strip().lower()
-#         if set(ori) == set(' *]['):
-#             ori = ''
         return func(text, ori)
-    return replace
+    return _replace
 
 """
     All replace functions take in the original text and a lower-cased version
@@ -209,7 +207,8 @@ def replace_misc(text):
     text = re.sub(r'\d{0,2}:\d{0,2} \b[A|P]\.?M\.?\b', replace_time, text, flags=re.IGNORECASE)
     text = re.sub(r'\[\*\*(\d{2})\*\*\] \b[a|p].?m.?\b', replace_time, text, flags=re.IGNORECASE)
     
-#     text = re.sub(r'\[\*\*(.*?)\*\*\]', '', text, flags=re.IGNORECASE)
+    # finally remove leftover redacted stuff (mostly empty)
+    text = re.sub(r'\[\*\*(.*?)\*\*\]', '', text, flags=re.IGNORECASE)
 
     return text
 

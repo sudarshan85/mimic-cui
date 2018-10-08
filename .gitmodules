@@ -1,0 +1,3 @@
+[submodule "QuickUMLS"]
+	path = QuickUMLS
+	url = git@github.com:sudarshan85/QuickUMLS.git
